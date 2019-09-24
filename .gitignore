@@ -1,0 +1,6 @@
+### IntelliJ IDEA ###
+.idea
+singal-login-parent.iml
+shiro-jwt-demo/shiro-jwt-demo.iml
+jwt-shiro-demo/target
+logs
