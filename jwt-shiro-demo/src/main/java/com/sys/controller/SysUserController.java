@@ -136,6 +136,7 @@ public class SysUserController {
 
         SecurityUtils.getSubject().logout();
         System.out.println("登出成功");
+        System.out.println("22222222222222222222");
 
         // 记得清除 redis 中缓存的 token
         redisTemplate.delete(JwtUtil.AUTH_TOKEN_KEY_PREFIX + String.valueOf(userId));
