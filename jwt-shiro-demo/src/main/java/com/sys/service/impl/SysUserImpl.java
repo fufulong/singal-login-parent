@@ -78,4 +78,11 @@ public class SysUserImpl extends ServiceImpl<SysUserMapper, SysUser> implements 
         return user;
     }
 
+    @Override
+    public List<SysUser> selectAll() {
+        this.selectList(null);
+
+        return this.selectList(null);
+    }
+
 }

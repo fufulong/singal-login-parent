@@ -8,6 +8,8 @@ import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSource
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.session.mgt.ServletContainerSessionManager;
+import org.crazycake.shiro.RedisManager;
+import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -28,8 +30,17 @@ import java.util.Map;
 public class ShiroConfig {
 
     //是否开启shiro拦截
-    @Value("${demo.shiro}")
-    private boolean isOpenShiro;
+    @Value("${demo.isOpenShiro}")
+    private boolean isOpenShiro ;
+
+    @Bean
+    public RedisManager redisManager(){
+        RedisManager redisManager = new RedisManager();
+        redisManager.setHost("127.0.0.1:6379");
+        return redisManager;
+    }
+
+    //todo
 
     /**
      * 配置 cookie 的序列化器
@@ -66,7 +77,7 @@ public class ShiroConfig {
      * 向 Spring 容器内加入这个对象
      */
     @Bean
-    @ConditionalOnProperty(prefix = "demo", name = "cluster", havingValue = "true")
+    @ConditionalOnProperty(prefix = "demo" , name = "isCluster", havingValue = "true")
     public ServletContainerSessionManager servletContainerSessionManager() {
         return new ServletContainerSessionManager();
     }
@@ -94,24 +105,42 @@ public class ShiroConfig {
      * @return
      */
     @Bean
-    @ConditionalOnProperty(prefix = "demo", name = "shiro", havingValue = "true")
+    @ConditionalOnProperty(prefix = "demo", name = "isOpenShiro", havingValue = "true")
     public AuthorizationAttributeSourceAdvisor sourceAdvisor(SecurityManager securityManager) {
         AuthorizationAttributeSourceAdvisor sourceAdvisor = new AuthorizationAttributeSourceAdvisor();
         sourceAdvisor.setSecurityManager(securityManager);
         return sourceAdvisor;
     }
+/*
 
+    下面配置了2个Bean 也不能支持 @RequirePermissions("vvvvv")注解,不知道怎么弄
+    *//**
+     * 下面两个 Bean 是为了开启 @RequirePermissions(value ="xxxx,xxx")有用.
+     * 否则需要在每个需要权限的方法里面手动加上验证逻辑 SecurityUtils.getsubject().checkPermissions(xxxx),
+     * 才会调用 UserRealm的 AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)方法之后再
+     * 调用 AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) 验证授权逻辑
+     * @return
+     */
     @Bean("lifecycleBeanPostProcessor")
     public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
         return new LifecycleBeanPostProcessor();
     }
 
 
+    @Bean
+    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator() {
+        DefaultAdvisorAutoProxyCreator proxyCreator = new DefaultAdvisorAutoProxyCreator();
+        proxyCreator.setProxyTargetClass(true);
+        return proxyCreator;
+    }
+
+
+
     @Bean("shiroFilter")
     public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         //设置没有认证就访问资源的跳转页面地址
-        factoryBean.setUnauthorizedUrl("/");
+//        factoryBean.setUnauthorizedUrl("/");
         // 设置登录的页面地址
 //        factoryBean.setLoginUrl("xxxx");
 
@@ -120,28 +149,31 @@ public class ShiroConfig {
 //        factoryBean.setSuccessUrl("xxx");
         // 设置 不需要经过验证过滤的地址,和需要验证过滤的地址
         Map<String, String> filterMap = new LinkedHashMap<>();
-        filterMap.put("/swagger/**", "anon");
-        filterMap.put("/v2/api-docs", "anon");
+    //为了swagger2的接口文档页面能够正常显示,通过shiro 必需设置下面的路径通过
         filterMap.put("/swagger-ui.html", "anon");
         filterMap.put("/webjars/**", "anon");
+        filterMap.put("/v2/**", "anon");
         filterMap.put("/swagger-resources/**", "anon");
+        filterMap.put("/configuration/security", "anon");
+        filterMap.put("/configuration/ui", "anon");
+
 
         filterMap.put("/statics/**", "anon");
         filterMap.put("/login.html", "anon");
 
         // 设置 注册,登录 和登出 3个接口 直接通过,不用进过shiro 的拦截器
-        filterMap.put("/sys/user/login", "anon");
-        filterMap.put("/sys/user/register", "anon");
-        filterMap.put("/sys/user/loginOut", "anon");
-        filterMap.put("/favicon.ico", "anon");
+        filterMap.put("/api/sys/user/login", "anon");
+        filterMap.put("/api/sys/user/register", "anon");
+        filterMap.put("/api/sys/user/loginOut", "anon");
 
         //配置自己的拦截器,并定义 key = "jwt"
         Map<String, Filter> jwtfilter = new HashMap<String, Filter>(1);
-        jwtfilter.put("jwt", new JwtFilter());
+        jwtfilter.put("JWT", new JwtFilter());
         factoryBean.setFilters(jwtfilter);
 
         // 过滤链从上往下依次进行,所以 /** 的都放在最后面.这里不用 shiro 自带的 key = "anoc"的过滤器,用自己定义的
-        filterMap.put("/**", isOpenShiro ? "jwt" : "anon");
+        filterMap.put("/api/**", isOpenShiro ? "JWT" : "anon");
+        System.out.println("isOpenShiro =" + isOpenShiro + ",size = " + jwtfilter.size());
         factoryBean.setFilterChainDefinitionMap(filterMap);
         return factoryBean;
 

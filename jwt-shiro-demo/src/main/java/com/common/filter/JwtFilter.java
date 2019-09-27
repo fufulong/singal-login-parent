@@ -14,9 +14,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- */
 @Component
 public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Autowired
@@ -51,7 +48,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         //前端需要传递 key = Authorization的请求头,请求头的value就是 登录后生成的jwtToken
         String token = httpServletRequest.getHeader("Authorization");
         if (StringUtils.isEmpty(token)){
-            throw new RuntimeException("请求头为null");
+            throw new RuntimeException("请求头Authorization为null");
         }
         JwtToken jwtToken = new JwtToken(token);
         // 提交给realm执行认证逻辑，如果错误他会抛出异常并被捕获

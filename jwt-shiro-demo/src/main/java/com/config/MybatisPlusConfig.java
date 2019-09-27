@@ -44,7 +44,7 @@ public class MybatisPlusConfig {
         factoryBean.setDataSource(dataSource);
         factoryBean.setPlugins(new Interceptor[]{paginationInterceptor()});
         factoryBean.setGlobalConfig(globalConfiguration());
-        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*.xml"));
+        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*/*.xml"));
         //设置mybatis的配置
         MybatisConfiguration configuration = new MybatisConfiguration();
         configuration.setCacheEnabled(false);

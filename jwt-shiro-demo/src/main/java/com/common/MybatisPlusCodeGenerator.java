@@ -67,7 +67,7 @@ public class MybatisPlusCodeGenerator {
         globalConfig.setIdType(IdType.AUTO);
         globalConfig.setAuthor("ffl");
         globalConfig.setBaseResultMap(true);
-        globalConfig.setEnableCache(true);
+        globalConfig.setEnableCache(false);
         globalConfig.setBaseColumnList(true);
         globalConfig.setServiceName("%sService");
         globalConfig.setServiceImplName("%sImpl");

@@ -2,6 +2,8 @@ package com.sys.VO;
 
 import com.common.pojo.UserRealm;
 import com.sys.domain.SysUser;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -14,11 +16,13 @@ import javax.validation.constraints.NotEmpty;
 /**
  * 创建 用户表单对象,注意没有验
  */
+@ApiModel(value ="注册信息表单")
 @Data
 public class SysUserCreateVO {
     /**
      * 姓名
      */
+    @ApiModelProperty(value = "用户姓名",example = "admin")
     @NotEmpty(message = "注册时候账号不能为空")
     @Length(message = "账号不能超过20个字符",max = 20)
     private String name;
@@ -26,17 +30,20 @@ public class SysUserCreateVO {
     /**
      * 年龄
      */
+    @ApiModelProperty(value = "年龄",example = "22")
     @Min(message = "年龄不能小于20岁",value = 20L)
     private Integer age;
 
     /**
      * 性别, 0女,1:男
      */
+    @ApiModelProperty(value = "性别",example = "1")
     private Integer sex;
 
     /**
      * 密码,注册的时候,传来的密码是经过前端加密的,之后再后端还要经过加密,才能存入数据库
      */
+    @ApiModelProperty(value = "密码",example = "123456")
     @NotEmpty(message = "注册密码不能为空")
     private String loginPassword;
 
@@ -44,7 +51,7 @@ public class SysUserCreateVO {
      * 根据创建表单对象,得到SysUser对象
      * @return SysUser对象
      */
-    public SysUser getUser(){
+    public SysUser parseToUser(){
         SysUser sysUser = new SysUser();
         // 先处理 和 SysUser的一样的属性
         BeanUtils.copyProperties(this,sysUser);

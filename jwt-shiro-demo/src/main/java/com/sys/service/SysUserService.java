@@ -26,4 +26,9 @@ public interface SysUserService extends IService<SysUser> {
 
     public SysUser selectByNameAndPassword(String name,String passwod);
 
+    /**
+     * 查询全部用户
+     * @return
+     */
+    List<SysUser> selectAll();
 }

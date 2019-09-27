@@ -7,9 +7,11 @@ import com.common.R;
 import com.common.pojo.JwtToken;
 import com.common.pojo.UserRealm;
 import com.sys.VO.SysUserCreateVO;
+import com.sys.dao.SysUserMapper;
 import com.sys.domain.SysUser;
 import com.sys.service.SysUserService;
 import io.jsonwebtoken.Jwt;
+import io.swagger.annotations.*;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -30,6 +32,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -40,8 +44,9 @@ import java.util.stream.Collectors;
  * @author ffl
  * @since 2019-09-19
  */
+@Api(tags = {"用户接口"},consumes = "application/json",produces = "application/json")
 @RestController
-@RequestMapping("/sys/user")
+@RequestMapping("/api/sys/user")
 public class SysUserController {
 
     @Autowired
@@ -53,6 +58,9 @@ public class SysUserController {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
     /**
      * 登录
      *
@@ -60,14 +68,19 @@ public class SysUserController {
      * @param password:登录的密码
      * @return
      */
+    @ApiOperation(value ="登录接口")
     @GetMapping(value = "/login")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name ="userName",value = "登录用户名"),
+            @ApiImplicitParam(name ="password",value="登录密码")
+    })
     public R login(@RequestParam String userName, @RequestParam String password) {
         if (StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)) {
             return R.error("登录用户名或者密码不能为空");
         }
 
-        if (SecurityUtils.getSubject().getPrincipal() != null){
-            return  R.error("已经登录,不要重复登录");
+        if (SecurityUtils.getSubject().getPrincipal() != null) {
+            return R.error("已经登录,不要重复登录");
         }
 
         SysUser user = sysUserService.selectByUserName(userName);
@@ -104,8 +117,9 @@ public class SysUserController {
      * @param createVO
      * @return
      */
+    @ApiOperation(value ="注册接口")
     @PostMapping(value = "/register")
-    public R register(@RequestBody @Valid SysUserCreateVO createVO, BindingResult bindingResult) {
+    public R register(@RequestBody @Valid @ApiParam(value = "注册信息表单") SysUserCreateVO createVO, BindingResult bindingResult) {
         String errMessage = bindingResult.getAllErrors().stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .distinct()
@@ -113,7 +127,7 @@ public class SysUserController {
         if (!StringUtils.isEmpty(errMessage)) {
             throw new RuntimeException(errMessage);
         }
-        sysUserService.insert(createVO.getUser());
+        sysUserService.insert(createVO.parseToUser());
         return R.ok("注册成功");
     }
 
@@ -123,8 +137,10 @@ public class SysUserController {
      * @param userId:退出登录的用户的id
      * @return
      */
-    @GetMapping(value = "/loginOut")
-    public R loginOut(Integer userId) {
+
+    @ApiOperation(value ="登出接口")
+    @GetMapping(value = "/loginOut/{userId}")
+    public R loginOut(@PathVariable @ApiParam(value ="登出的用户id") Integer userId) {
         if (userId == null || userId <= 0) {
             throw new RuntimeException("退出登录的用户名不能为null");
         }
@@ -135,27 +151,41 @@ public class SysUserController {
         }
 
         SecurityUtils.getSubject().logout();
-        System.out.println("登出成功");
-        System.out.println("22222222222222222222");
-
         // 记得清除 redis 中缓存的 token
         redisTemplate.delete(JwtUtil.AUTH_TOKEN_KEY_PREFIX + String.valueOf(userId));
         return R.ok("登出成功");
 
     }
 
-    @RequiresPermissions(value = "sys:user:selectByName")
+   @RequiresPermissions(value = "sys:user:selectByName")
+    @ApiOperation(value ="根据用户名查找用户")
+    @ApiImplicitParams(value = {
+            @ApiImplicitParam(name = "name")
+        }
+    )
     @GetMapping(value = "/selectByName/{name}")
-    public R selectByName(@PathVariable String name){
-        if (StringUtils.isEmpty(name)){
+    public R selectByName(@PathVariable String name) {
+        if (StringUtils.isEmpty(name)) {
             throw new RuntimeException("查找的用户名不能为空");
         }
-
         EntityWrapper<SysUser> wrapper = new EntityWrapper<>();
-        wrapper.like("name",name);
+        wrapper.like("name", name);
         List<SysUser> sysUsers = sysUserService.selectList(wrapper);
         return R.ok("按照用户模糊名  " + name + "  查询成功").put(sysUsers);
 
+    }
+
+    @ApiOperation("查找全部的用户")
+    @GetMapping(value = "/selectAll")
+    public R selectAll() {
+        System.out.println("测试无权限限制方法");
+
+        List<SysUser> users = sysUserService.selectAll();
+        users.stream().forEach(item -> {
+            System.out.println(item);
+        });
+
+        return R.ok("测试成功").put(users);
     }
 
 }

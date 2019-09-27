@@ -14,7 +14,9 @@ import com.baomidou.mybatisplus.annotations.Version;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * <p>
@@ -26,10 +28,11 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
+@ToString
 @TableName("sys_user")
-public class SysUser extends Model<SysUser> {
+public class SysUser extends Model<SysUser> implements  Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID =Integer.valueOf(RandomStringUtils.randomNumeric(15)) ;
 
     /**
      * 用户信息表的id
