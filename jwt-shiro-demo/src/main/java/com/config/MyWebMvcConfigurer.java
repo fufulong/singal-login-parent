@@ -3,7 +3,10 @@ package com.config;
 import com.common.Interceptor.AuthtizationInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebMvc
@@ -27,6 +30,7 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
 
     /**
      * 重写 springmvc的拦截器库,加上自己定义的拦截器
+     *
      * @param registry
      */
     @Override
@@ -44,4 +48,11 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
                 .excludePathPatterns("/api/sys/user/register");
 
     }
+
+/*    @Bean
+    public PropertyPlaceholderConfigurer propertyPlaceholderConfigurer(){
+        PropertyPlaceholderConfigurer configurer = new PropertyPlaceholderConfigurer();
+        return configurer;
+    }*/
+
 }

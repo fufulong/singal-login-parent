@@ -10,6 +10,7 @@ import com.sys.VO.SysUserCreateVO;
 import com.sys.dao.SysUserMapper;
 import com.sys.domain.SysUser;
 import com.sys.service.SysUserService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwt;
 import io.swagger.annotations.*;
 import org.apache.shiro.SecurityUtils;
@@ -139,14 +140,15 @@ public class SysUserController {
      */
 
     @ApiOperation(value ="登出接口")
-    @GetMapping(value = "/loginOut/{userId}")
-    public R loginOut(@PathVariable @ApiParam(value ="登出的用户id") Integer userId) {
+    @GetMapping(value = "/loginOut")
+    public R loginOut(@RequestParam @ApiParam(value ="登出的用户id") Integer userId) {
         if (userId == null || userId <= 0) {
             throw new RuntimeException("退出登录的用户名不能为null");
         }
+        // 我们这里存的用户的登陆账号和登陆密码都是 jwt token ,所以这里的 pricipal是 字符串
+        String principal =(String) SecurityUtils.getSubject().getPrincipal();
 
-        SysUser loginUser = (SysUser) (SecurityUtils.getSubject().getPrincipal());
-        if (loginUser == null) {
+        if (principal == null) {
             throw new RuntimeException("登录之后没有操作太久,登录信息已经失效或者已经登出,不要重复操作");
         }
 

@@ -43,7 +43,7 @@ public class SysUserCreateVO {
     /**
      * 密码,注册的时候,传来的密码是经过前端加密的,之后再后端还要经过加密,才能存入数据库
      */
-    @ApiModelProperty(value = "密码",example = "123456")
+    @ApiModelProperty(value = "密码")
     @NotEmpty(message = "注册密码不能为空")
     private String loginPassword;
 

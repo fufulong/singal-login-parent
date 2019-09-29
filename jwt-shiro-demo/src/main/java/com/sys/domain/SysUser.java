@@ -32,7 +32,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 @TableName("sys_user")
 public class SysUser extends Model<SysUser> implements  Serializable {
 
-    private static final long serialVersionUID =Integer.valueOf(RandomStringUtils.randomNumeric(15)) ;
+    private static final long serialVersionUID = -1L;
 
     /**
      * 用户信息表的id
