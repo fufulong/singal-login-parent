@@ -19,7 +19,7 @@
         <mybatisplus.version>2.1.9</mybatisplus.version>
         <mybatisplus.spring.boot.version>1.0.5</mybatisplus.spring.boot.version>
         <jackson.datatype.jsr310.version>2.9.5</jackson.datatype.jsr310.version>
-        <shiro.version>1.4.0</shiro.version>
+        <shiro.version>1.7.1</shiro.version>
         <jedis.version>2.9.0</jedis.version>
         <project.lib.path>${project.basedir}/../jar</project.lib.path>
         <transaction.version>4.0.4</transaction.version>
